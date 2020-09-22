@@ -87,26 +87,26 @@ menu "TractorKit Peripheral"
             help
                 The thermometer model.
             
-            config THERM_MELEXIS_MLX_90614
+            config THERM_MELEXIS_MLX90614
                 bool "Melexis MLX90614"
         endchoice
     endmenu
     
-    menu "Status LED"
-        config STATUS_LED_ENABLE
-            bool "Enable Status LED"
+    menu "Onboard LED"
+        config ONBOARD_LED_ENABLE
+            bool "Enable onboard LED"
             default y if TK_ENGINESENSE || TK_NAVIS
             default n
             help
-                Enables the status LED. Set to no if there is no LED on the board.
+                Enables the onboard LED. Set to no if there is no LED on the board.
 
-        config STATUS_LED_GPIO
-            int "Status LED GPIO"
+        config ONBOARD_LED_GPIO
+            int "Onboard LED GPIO"
             range 0 39
-            depends on STATUS_LED_ENABLE
+            depends on ONBOARD_LED_ENABLE
             default 23 if TK_ENGINESENSE || TK_NAVIS
             default 0
             help
-                Sets the status LED's GPIO number.
+                Sets the onboard LED's GPIO number.
     endmenu
 endmenu

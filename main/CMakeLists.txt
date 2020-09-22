@@ -1,4 +1,4 @@
-file(GLOB_RECURSE SOURCES main.c)
+file(GLOB_RECURSE SOURCES main.c drivers/*/*.c)
 
 idf_component_register(
                     SRCS ${SOURCES}

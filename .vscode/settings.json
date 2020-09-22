@@ -10,7 +10,19 @@
   "C_Cpp.intelliSenseEngineFallback": "Enabled",
   "files.associations": {
     "freertos.h": "c",
-    "esp_app_format.h": "c"
+    "esp_app_format.h": "c",
+    "*.ipp": "c",
+    "*.inc": "c",
+    "*.tcc": "c",
+    "complex": "c",
+    "string": "c",
+    "vector": "c",
+    "fstream": "c",
+    "limits": "c",
+    "sstream": "c",
+    "utility": "c",
+    "math.h": "c",
+    "led_onboard.h": "c"
   },
   "idf.port": "/dev/cu.usbserial-A1076LH4",
   "idf.baudRate": "921600"
