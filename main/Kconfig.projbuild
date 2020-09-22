@@ -1,0 +1,101 @@
+menu "TractorKit Peripheral"
+    choice DEVICE_KIND
+        prompt "Device kind"
+        default TK_ENGINESENSE
+        help
+            The kind of peripheral. Set to custom for new designs.
+        
+        config TK_ENGINESENSE
+            bool "EngineSense"
+        config TK_NAVIS
+            bool "Navis"
+        config TK_CUSTOM
+            bool "Custom"
+    endchoice
+
+    config DEVICE_NAME
+        string "Device name"
+        default "EngineSense" if TK_ENGINESENSE
+        default "Navis" if TK_NAVIS
+        default "TractorKit Peripheral" if TK_CUSTOM
+        help
+            Sets the base device name.
+
+    config CURRENT_SENSOR_ENABLE
+        bool "Enable current sensor"
+        default n
+        help
+            Enables the current sensor. Set to no if there is no current sensor onboard.
+
+    config ADC2_CH7_IS_GPIO
+        bool "SAR ADC 2 channel 7 is a GPIO"
+        depends on TK_ENGINESENSE
+        default n
+        help
+            If this channel has a voltage divider, this should be set to no, meaning that this channel is used as an ADC input.
+            If set to yes, its pin will be used as GPIO 27.
+
+    config ADC2_CH9_IS_GPIO
+        bool "SAR ADC 2 channel 9 is a GPIO"
+        depends on TK_ENGINESENSE
+        default n
+        help
+            If this channel has a voltage divider, this should be set to no, meaning that this channel is used as an ADC input.
+            If set to yes, its pin will be used as GPIO 26.
+
+
+    menu "GPS"
+        depends on TK_NAVIS || TK_CUSTOM
+        config GPS_ENABLE
+            bool "Enable GPS"
+            default y if TK_NAVIS
+            default n
+            help
+                Enables the connection with the GPS.
+        
+    endmenu
+
+    menu "Engine"
+        depends on TK_ENGINESENSE || TK_CUSTOM
+        config RPM_ENABLE
+            bool "Enable RPM sensor"
+            default y if TK_ENGINESENSE
+            default n
+            help
+                Enables the RPM sensor.
+
+        config RPM_GPIO
+            int "RPM sensor GPIO"
+            range 0 39
+            depends on RPM_ENABLE
+            default 25 if RPM_ENABLE
+            default 0
+            help
+                Sets the default GPIO for the RPM sensor's pulse output.
+
+        config TEMP_ENABLE
+            bool "Enable engine I2C temperature sensor"
+            default y if TK_ENGINESENSE
+            default n
+            help
+                Enables the I2C IR temperature sensor.
+    endmenu
+    
+    menu "Status LED"
+        config STATUS_LED_ENABLE
+            bool "Enable Status LED"
+            default y if TK_ENGINESENSE || TK_NAVIS
+            default n
+            help
+                Enables the status LED. Set to no if there is no LED on the board.
+
+        config STATUS_LED_GPIO
+            int "Status LED GPIO"
+            range 0 39
+            depends on STATUS_LED_ENABLE
+            default 23 if TK_ENGINESENSE || TK_NAVIS
+            default 0
+            help
+                Sets the status LED's GPIO number.
+    endmenu
+endmenu
