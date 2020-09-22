@@ -79,6 +79,17 @@ menu "TractorKit Peripheral"
             default n
             help
                 Enables the I2C IR temperature sensor.
+
+        choice TEMP_TH_MODEL
+            prompt "Device kind"
+            depends on TEMP_ENABLE
+            default THERM_MELEXIS_MLX90614
+            help
+                The thermometer model.
+            
+            config THERM_MELEXIS_MLX_90614
+                bool "Melexis MLX90614"
+        endchoice
     endmenu
     
     menu "Status LED"

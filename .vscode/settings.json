@@ -7,5 +7,11 @@
   "[c]": {
     "editor.quickSuggestions": true
   },
-  "C_Cpp.intelliSenseEngineFallback": "Enabled"
+  "C_Cpp.intelliSenseEngineFallback": "Enabled",
+  "files.associations": {
+    "freertos.h": "c",
+    "esp_app_format.h": "c"
+  },
+  "idf.port": "/dev/cu.usbserial-A1076LH4",
+  "idf.baudRate": "921600"
 }

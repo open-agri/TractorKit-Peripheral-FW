@@ -10,9 +10,13 @@
 
 #include "esp_spi_flash.h"
 #include "esp_system.h"
+#include "esp_log.h"
+#include "esp_ota_ops.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <stdio.h>
+
+#define TAG "Main"
 
 void app_main(void) {
   esp_log_level_set("*", ESP_LOG_INFO);
