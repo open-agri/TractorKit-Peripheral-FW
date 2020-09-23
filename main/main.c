@@ -30,7 +30,7 @@ void app_main(void) {
       "Peripheral boot. %s %s for ESP32 (compiled on %s %s) with ESP-IDF %s.",
       desc->project_name, desc->version, desc->date, desc->time, desc->idf_ver);
 
-#ifdef CONFIG_ONBOARD_LED_ENABLE
+#if CONFIG_TK_ONBOARD_LED_ENABLE
   led_onboard_init();
   led_onboard_set_curve(led_onboard_curve_breathe, 6000);
   // led_onboard_set_curve(led_onboard_curve_flash_and_fade, 2000);

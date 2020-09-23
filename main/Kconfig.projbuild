@@ -1,10 +1,10 @@
 menu "TractorKit Peripheral"
-    choice DEVICE_KIND
+    choice TK_DEVICE_KIND
         prompt "Device kind"
         default TK_ENGINESENSE
         help
             The kind of peripheral. Set to custom for new designs.
-        
+
         config TK_ENGINESENSE
             bool "EngineSense"
         config TK_NAVIS
@@ -13,7 +13,7 @@ menu "TractorKit Peripheral"
             bool "Custom"
     endchoice
 
-    config DEVICE_NAME
+    config TK_DEVICE_NAME
         string "Device name"
         default "EngineSense" if TK_ENGINESENSE
         default "Navis" if TK_NAVIS
@@ -21,89 +21,91 @@ menu "TractorKit Peripheral"
         help
             Sets the base device name.
 
-    config CURRENT_SENSOR_ENABLE
+    config TK_CURRENT_SENSOR_ENABLE
         bool "Enable current sensor"
         default n
         help
             Enables the current sensor. Set to no if there is no current sensor onboard.
 
-    config ADC2_CH7_IS_GPIO
+    config TK_ADC2_CH7_IS_GPIO
         bool "SAR ADC 2 channel 7 is a GPIO"
         depends on TK_ENGINESENSE
         default n
         help
-            If this channel has a voltage divider, this should be set to no, meaning that this channel is used as an ADC input.
+            If this channel has a voltage divider, this should be set to no,
+            meaning that this channel is used as an ADC input.
             If set to yes, its pin will be used as GPIO 27.
 
-    config ADC2_CH9_IS_GPIO
+    config TK_ADC2_CH9_IS_GPIO
         bool "SAR ADC 2 channel 9 is a GPIO"
         depends on TK_ENGINESENSE
         default n
         help
-            If this channel has a voltage divider, this should be set to no, meaning that this channel is used as an ADC input.
+            If this channel has a voltage divider, this should be set to no,
+            meaning that this channel is used as an ADC input.
             If set to yes, its pin will be used as GPIO 26.
 
 
     menu "GPS"
         depends on TK_NAVIS || TK_CUSTOM
-        config GPS_ENABLE
+        config TK_GPS_ENABLE
             bool "Enable GPS"
             default y if TK_NAVIS
             default n
             help
                 Enables the connection with the GPS.
-        
+
     endmenu
 
     menu "Engine"
         depends on TK_ENGINESENSE || TK_CUSTOM
-        config RPM_ENABLE
+        config TK_ENGINE_RPM_ENABLE
             bool "Enable RPM sensor"
             default y if TK_ENGINESENSE
             default n
             help
                 Enables the RPM sensor.
 
-        config RPM_GPIO
+        config TK_ENGINE_RPM_GPIO
             int "RPM sensor GPIO"
             range 0 39
-            depends on RPM_ENABLE
+            depends on TK_ENGINE_RPM_ENABLE
             default 25 if RPM_ENABLE
             default 0
             help
                 Sets the default GPIO for the RPM sensor's pulse output.
 
-        config TEMP_ENABLE
+        config TK_ENGINE_THERM_ENABLE
             bool "Enable engine I2C temperature sensor"
             default y if TK_ENGINESENSE
             default n
             help
                 Enables the I2C IR temperature sensor.
 
-        choice TEMP_TH_MODEL
+        choice TK_ENGINE_THERM_MODEL
             prompt "Device kind"
-            depends on TEMP_ENABLE
+            depends on TK_ENGINE_THERM_ENABLE
             default THERM_MELEXIS_MLX90614
             help
                 The thermometer model.
-            
-            config THERM_MELEXIS_MLX90614
+
+            config TK_ENGINE_THERM_MELEXIS_MLX90614
                 bool "Melexis MLX90614"
         endchoice
     endmenu
-    
+
     menu "Onboard LED"
-        config ONBOARD_LED_ENABLE
+        config TK_ONBOARD_LED_ENABLE
             bool "Enable onboard LED"
             default y if TK_ENGINESENSE || TK_NAVIS
             default n
             help
                 Enables the onboard LED. Set to no if there is no LED on the board.
 
-        config ONBOARD_LED_GPIO
+        config TK_ONBOARD_LED_GPIO
             int "Onboard LED GPIO"
             range 0 39
-            depends on ONBOARD_LED_ENABLE
+            depends on TK_ONBOARD_LED_ENABLE
             default 23 if TK_ENGINESENSE || TK_NAVIS
             default 0
             help

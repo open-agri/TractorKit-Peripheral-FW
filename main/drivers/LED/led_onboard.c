@@ -8,6 +8,7 @@
  *
  */
 
+
 #include "driver/ledc.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
@@ -53,7 +54,7 @@ static double __led_curve_flash_and_fade(double progress) {
 }
 
 static double __led_curve_breathe(double progress) {
-  return (exp(sin(2 * M_PI * progress)) / M_E - 0.13) * 0.7;
+  return (exp(sin(2 * M_PI * progress)) / M_E - 0.14) * 0.3;
 }
 
 void LEDCurveTask(void *pvParameters) {
@@ -165,8 +166,10 @@ led_onboard_mode_t led_onboard_get_mode(void) { return mode_int; }
  * @param period
  */
 void led_onboard_set_curve(LEDCurveFunction curve, unsigned int period) {
+  if (led_onboard_get_mode != LED_ONBOARD_MODE_CURVE)
+    led_onboard_set_mode(LED_ONBOARD_MODE_CURVE);
+    
   current_curve = curve;
   current_period = period;
   ESP_LOGI(TAG, "Setting LED curve function to %p.", curve);
-  led_onboard_set_mode(LED_ONBOARD_MODE_CURVE);
 }
