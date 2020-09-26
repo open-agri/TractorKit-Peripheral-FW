@@ -12,13 +12,12 @@
 
 #include <stdbool.h>
 
-#include "model/engine.h"
+#include "engine.h"
+#include "peripheral_settings.h"
 
 typedef struct {
-#ifdef CONFIG_TK_ENGINE_RPM_ENABLE
   tk_engine_data_t engine_data;
-#endif
-
+  tk_peripheral_settings_t settings;
 } tk_datastore_t;
 
 tk_datastore_t global_datastore;

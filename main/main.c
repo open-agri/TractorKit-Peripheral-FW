@@ -17,6 +17,9 @@
 #include <stdio.h>
 
 #include "drivers/LED/led_onboard.h"
+#include "drivers/RPM/pulse.h"
+
+#include "model/datastore.h"
 
 #define TAG "Main"
 
@@ -36,4 +39,13 @@ void app_main(void) {
   // led_onboard_set_curve(led_onboard_curve_flash_and_fade, 2000);
   // led_onboard_set_curve(led_onboard_curve_fast_flash, 2000);
 #endif
+
+#if CONFIG_TK_ENGINE_RPM_ENABLE
+  engine_rpm_pulse_init(&(global_datastore.engine_data.rpm), &(global_datastore.engine_data.rpm_available), 1.0);
+#endif
+
+  while (1) {
+    vTaskDelay(100 / portTICK_RATE_MS);
+    ESP_LOGW(TAG, "RPM = %.4f%s.", global_datastore.engine_data.rpm, global_datastore.engine_data.rpm_available ? "" : " [N/A]");
+  }
 }

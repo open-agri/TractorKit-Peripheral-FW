@@ -8,11 +8,12 @@
  * 
  */
 
+#pragma once
+
 #include <stdbool.h>
 
 typedef struct {
     #ifdef CONFIG_TK_ENGINE_RPM_ENABLE
         double rpm_coeff;
-        unsigned int 
     #endif
 } tk_peripheral_settings_t;

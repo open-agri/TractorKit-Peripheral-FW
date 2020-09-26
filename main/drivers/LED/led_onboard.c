@@ -166,7 +166,7 @@ led_onboard_mode_t led_onboard_get_mode(void) { return mode_int; }
  * @param period
  */
 void led_onboard_set_curve(LEDCurveFunction curve, unsigned int period) {
-  if (led_onboard_get_mode != LED_ONBOARD_MODE_CURVE)
+  if (led_onboard_get_mode() != LED_ONBOARD_MODE_CURVE)
     led_onboard_set_mode(LED_ONBOARD_MODE_CURVE);
     
   current_curve = curve;

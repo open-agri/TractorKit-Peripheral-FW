@@ -10,8 +10,6 @@
 
 #pragma once
 
-#ifdef CONFIG_TK_ENGINE_RPM_ENABLE
-
 #include <stdbool.h>
 
 /**
@@ -20,20 +18,22 @@
  */
 typedef struct {
 
+#if CONFIG_TK_ENGINE_RPM_ENABLE
   /**
    * @brief The engine's RPM.
    *
    */
   double rpm;
   bool rpm_available;
+#endif
 
+#if CONFIG_TK_ENGINE_THERM_ENABLE
   /**
    * @brief The engine's external temperature in Celsius degrees.
    *
    */
   double temp_c;
   bool temp_c_available;
+#endif
 
 } tk_engine_data_t;
-
-#endif

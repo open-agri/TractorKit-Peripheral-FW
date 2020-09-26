@@ -70,10 +70,29 @@ menu "TractorKit Peripheral"
             int "RPM sensor GPIO"
             range 0 39
             depends on TK_ENGINE_RPM_ENABLE
-            default 25 if RPM_ENABLE
+            default 25 if TK_ENGINE_RPM_ENABLE
             default 0
             help
                 Sets the default GPIO for the RPM sensor's pulse output.
+
+        config TK_ENGINE_RPM_DEBOUNCE_US
+            int "RPM pulse debounce time (in us)"
+            range 100 10000
+            depends on TK_ENGINE_RPM_ENABLE
+            default 2000
+            help
+                The debounce time for the pulse interrupt.
+                Useful for filtering hall sensor instability when magnet is moving.
+            
+        config TK_ENGINE_RPM_MAX_PERIOD
+            int "Maximum pulse period (in ms)"
+            range 100 100000
+            depends on TK_ENGINE_RPM_ENABLE
+            default 1000
+            help
+                If the interrupt doesn't get called within this maximum period,
+                data will become not available because the frequency is too low.
+                Used when the frequency is too low for a simple threshold.
 
         config TK_ENGINE_THERM_ENABLE
             bool "Enable engine I2C temperature sensor"
@@ -85,7 +104,7 @@ menu "TractorKit Peripheral"
         choice TK_ENGINE_THERM_MODEL
             prompt "Device kind"
             depends on TK_ENGINE_THERM_ENABLE
-            default THERM_MELEXIS_MLX90614
+            default TK_ENGINE_THERM_MELEXIS_MLX90614
             help
                 The thermometer model.
 
