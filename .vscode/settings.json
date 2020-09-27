@@ -22,7 +22,16 @@
     "sstream": "c",
     "utility": "c",
     "math.h": "c",
-    "led_onboard.h": "c"
+    "led_onboard.h": "c",
+    "typeinfo": "c",
+    "array": "cpp",
+    "functional": "cpp",
+    "istream": "cpp",
+    "ostream": "cpp",
+    "tuple": "cpp",
+    "type_traits": "cpp",
+    "chrono": "cpp",
+    "ratio": "cpp"
   },
   "idf.port": "/dev/cu.usbserial-A1076LH4",
   "idf.baudRate": "921600"
