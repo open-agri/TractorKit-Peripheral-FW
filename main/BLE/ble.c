@@ -13,7 +13,6 @@
 #include "esp_system.h"
 #include "nvs_flash.h"
 /* BLE */
-#include "console/console.h"
 #include "esp_nimble_hci.h"
 #include "host/ble_hs.h"
 #include "host/util/util.h"
@@ -32,9 +31,12 @@ static uint8_t own_addr_type;
 void ble_store_config_init(void);
 static void ble_advertise(void);
 
-#define SERVICE_COUNT 2
-const ble_uuid128_t service_ids[SERVICE_COUNT] = {tk_id_engine_rpm,
-                                                  tk_id_engine_temperature};
+#define SERVICE_COUNT_128 2
+const ble_uuid128_t service_ids_128[SERVICE_COUNT_128] = {
+    tk_id_engine_rpm, tk_id_engine_temperature};
+
+#define SERVICE_COUNT_16 1
+const ble_uuid16_t service_ids_16[SERVICE_COUNT_16] = {tk_id_device_info};
 
 /**
  * The nimble host executes this callback when a GAP event occurs.  The
@@ -58,7 +60,7 @@ static int ble_gap_event_cb(struct ble_gap_event *event, void *arg) {
   switch (event->type) {
   case BLE_GAP_EVENT_CONNECT:
     /* A new connection was established or a connection attempt failed. */
-    ESP_LOGI(TAG, "Connection %s; status=%d ",
+    ESP_LOGI(TAG, "Connection %s; status=%x",
              event->connect.status == 0 ? "established" : "failed",
              event->connect.status);
     if (event->connect.status == 0) {
@@ -73,7 +75,7 @@ static int ble_gap_event_cb(struct ble_gap_event *event, void *arg) {
     return 0;
 
   case BLE_GAP_EVENT_DISCONNECT:
-    ESP_LOGI(TAG, "disconnect; reason=%d ", event->disconnect.reason);
+    ESP_LOGI(TAG, "Disconnected; reason=%x", event->disconnect.reason);
 
     /* Connection terminated; resume advertising. */
     ble_advertise();
@@ -81,19 +83,19 @@ static int ble_gap_event_cb(struct ble_gap_event *event, void *arg) {
 
   case BLE_GAP_EVENT_CONN_UPDATE:
     /* The central has updated the connection parameters. */
-    ESP_LOGI(TAG, "connection updated; status=%d ", event->conn_update.status);
+    ESP_LOGI(TAG, "Connection updated; status=%x", event->conn_update.status);
     rc = ble_gap_conn_find(event->conn_update.conn_handle, &desc);
     assert(rc == 0);
     return 0;
 
   case BLE_GAP_EVENT_ADV_COMPLETE:
-    ESP_LOGI(TAG, "advertise complete; reason=%d", event->adv_complete.reason);
+    ESP_LOGI(TAG, "Advertise complete; reason=%x", event->adv_complete.reason);
     ble_advertise();
     return 0;
 
   case BLE_GAP_EVENT_ENC_CHANGE:
     /* Encryption has been enabled or disabled for this connection. */
-    ESP_LOGI(TAG, "encryption change event; status=%d ",
+    ESP_LOGI(TAG, "Encryption change event; status=%x",
              event->enc_change.status);
     rc = ble_gap_conn_find(event->enc_change.conn_handle, &desc);
     assert(rc == 0);
@@ -101,8 +103,8 @@ static int ble_gap_event_cb(struct ble_gap_event *event, void *arg) {
 
   case BLE_GAP_EVENT_SUBSCRIBE:
     ESP_LOGI(TAG,
-             "subscribe event; conn_handle=%d attr_handle=%d "
-             "reason=%d prevn=%d curn=%d previ=%d curi=%d",
+             "Subscribe event; conn_handle=%d attr_handle=%d "
+             "reason=%x prevn=%d curn=%d previ=%d curi=%d",
              event->subscribe.conn_handle, event->subscribe.attr_handle,
              event->subscribe.reason, event->subscribe.prev_notify,
              event->subscribe.cur_notify, event->subscribe.prev_indicate,
@@ -165,17 +167,38 @@ static void ble_advertise(void) {
     return;
   }
 
-  // Initialize UUIDs in loop
-  for (int i = 0; i < SERVICE_COUNT; i++) {
+  memset(&fields, 0, sizeof fields);
+
+  // Initialize 128-bit UUIDs in loop
+  for (int i = 0; i < SERVICE_COUNT_128; i++) {
     fields.num_uuids128 = 1;
-    fields.uuids128 = &(service_ids[i]);
-    fields.uuids128_is_complete = (i == SERVICE_COUNT - 1);
+    fields.uuids128 = &(service_ids_128[i]);
+    fields.uuids128_is_complete = (i == SERVICE_COUNT_128 - 1);
 
     // Set additional fields
     rc = ble_gap_adv_set_fields(&fields);
     if (rc) {
       ESP_LOGE(TAG,
-               "Error while setting service UUID number %d in GAP fields "
+               "Error while setting service 128-bit UUID number %d in GAP fields "
+               "(error %d).",
+               i, rc);
+      return;
+    }
+  }
+
+  memset(&fields, 0, sizeof fields);
+
+  // Initialize 16-bit UUIDs in loop
+  for (int i = 0; i < SERVICE_COUNT_16; i++) {
+    fields.num_uuids16 = 1;
+    fields.uuids16 = &(service_ids_16[i]);
+    fields.uuids16_is_complete = (i == SERVICE_COUNT_16 - 1);
+
+    // Set additional fields
+    rc = ble_gap_adv_set_fields(&fields);
+    if (rc) {
+      ESP_LOGE(TAG,
+               "Error while setting service 16-bit UUID number %d in GAP fields "
                "(error %d).",
                i, rc);
       return;

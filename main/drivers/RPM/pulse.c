@@ -14,6 +14,9 @@
 #include "esp_log.h"
 #include "esp_timer.h"
 
+#include "BLE/tk_uuid.h"
+#include "host/ble_hs.h"
+
 #include "pulse.h"
 
 #define TAG "RPM pulse"
@@ -22,10 +25,15 @@
 
 esp_timer_handle_t deb_timer;
 esp_timer_handle_t period_limiter_timer;
+esp_timer_handle_t gatt_refresh_timer;
 
 static double current_coeff;
 static int64_t prev_micros = 0;
 bool *data_available;
+
+// GATT handles
+uint16_t rpm_chr_val_handle = 0;
+uint16_t rpm_avail_chr_val_handle = 0;
 
 /**
  * @brief The usual exponential rolling average for some smoothing.
@@ -35,8 +43,8 @@ bool *data_available;
  * @return double The new average.
  */
 double exp_roll_avg(double avg, double new_sample) {
-  avg -= avg / 10;
-  avg += new_sample / 10;
+  avg -= avg / 4;
+  avg += new_sample / 4;
 
   return avg;
 }
@@ -67,6 +75,7 @@ void engine_rpm_pulse_after_deb(void *arg) {
   double rpm = (1000000.0 / (double)delta) * 60 * current_coeff;
   double avg = *(double *)(arg);
 
+  // Set passed output pointer to value
   avg = exp_roll_avg(avg, rpm);
   *(double *)(arg) = avg;
 
@@ -84,8 +93,22 @@ void engine_rpm_pulse_after_deb(void *arg) {
  * @param arg The output RPM value.
  */
 void engine_rpm_max_period_reached(void *arg) {
-  *(double*)(arg) = 0;
+  *(double *)(arg) = 0;
   *data_available = false;
+
+  // TODO: Update availability chr on GATT
+}
+
+void gatt_refresh_timer_cb(void *arg) {
+  if (!rpm_chr_val_handle || !rpm_avail_chr_val_handle)
+    engine_rpm_update_gatt_handles();
+
+  // Notify
+  if (rpm_chr_val_handle) {
+    ble_gatts_chr_updated(rpm_chr_val_handle);
+  }
+
+  // TODO!
 }
 
 /**
@@ -122,6 +145,19 @@ void engine_rpm_pulse_init(double *output, bool *output_available,
   // Start timer
   ESP_ERROR_CHECK(esp_timer_start_once(period_limiter_timer, RPM_MAX_PERIOD));
 
+  // Handle refresh timer
+  esp_timer_create_args_t gatt_refresh_timer_args = {
+      .callback = gatt_refresh_timer_cb,
+      .name = "engine_rpm_gatt_refresh",
+      .arg = NULL};
+
+  ESP_ERROR_CHECK(esp_timer_create(&gatt_refresh_timer_args,
+                                   &gatt_refresh_timer));
+
+  // Start timer (100ms)
+  ESP_ERROR_CHECK(
+      esp_timer_start_periodic(gatt_refresh_timer, 100 * 1000));
+
   // Prevent first reading error
   prev_micros = esp_timer_get_time();
   engine_rpm_set_coeff(coeff);
@@ -144,4 +180,38 @@ void engine_rpm_pulse_init(double *output, bool *output_available,
 void engine_rpm_set_coeff(double coeff) {
   ESP_LOGI(TAG, "Setting coefficient to %.2f.", coeff);
   current_coeff = coeff;
+}
+
+/**
+ * @brief Updates the GATT value handles.
+ *
+ */
+void engine_rpm_update_gatt_handles() {
+
+  ESP_LOGI(TAG, "Updating GATT value handles.");
+
+  int rc;
+
+  // Get RPM handle
+  rc = ble_gatts_find_chr(&tk_id_engine_rpm, &tk_id_engine_rpm_ch_rpm,
+                          NULL, &rpm_chr_val_handle);
+
+  if (rc) {
+    ESP_LOGW(TAG,
+             "Unable to get GATT RPM characteristic value handle (error %x).",
+             rc);
+    rpm_chr_val_handle = 0;
+  }
+
+  // Get RPM availability handle
+  rc = ble_gatts_find_chr(&tk_id_engine_rpm, &tk_id_engine_rpm_ch_rpm_avail,
+                          NULL, &rpm_avail_chr_val_handle);
+
+  if (rc) {
+    ESP_LOGW(TAG,
+             "Unable to get GATT RPM availability characteristic value handle "
+             "(error %x).",
+             rc);
+    rpm_avail_chr_val_handle = 0;
+  }
 }

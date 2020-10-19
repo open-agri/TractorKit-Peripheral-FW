@@ -21,4 +21,10 @@ void engine_rpm_pulse_init(double *output, bool *output_available,
                            
 void engine_rpm_set_coeff(double coeff);
 
+/**
+ * @brief Updates the GATT value handles.
+ * 
+ */
+void engine_rpm_update_gatt_handles();
+
 #endif

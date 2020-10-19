@@ -17,6 +17,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "esp_ota_ops.h"
+#include "esp_system.h"
+
 #include "model/datastore.h"
 #include "tk_uuid.h"
 
@@ -26,6 +29,52 @@ static int tk_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
                           struct ble_gatt_access_ctxt *ctxt, void *arg);
 
 static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
+    {
+        /*** Service: Device information */
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = &tk_id_device_info.u,
+        .characteristics =
+            (struct ble_gatt_chr_def[]){
+                {
+                    /*** Characteristic: Manufacturer name string */
+                    .uuid = &tk_id_device_info_mfr_name_string.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ,
+                },
+                {
+                    /*** Characteristic: Model number string */
+                    .uuid = &tk_id_device_info_model_number_string.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ,
+                },
+                {
+                    /*** Characteristic: Serial number string */
+                    .uuid = &tk_id_device_info_sn_string.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ,
+                },
+                {
+                    /*** Characteristic: HW rev string */
+                    .uuid = &tk_id_device_info_hw_rev_string.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ,
+                },
+                {
+                    /*** Characteristic: FW rev string */
+                    .uuid = &tk_id_device_info_fw_rev_string.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ,
+                },
+                {
+                    /*** Characteristic: SW rev string */
+                    .uuid = &tk_id_device_info_sw_rev_string.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ,
+                },
+                {
+                    0, /* No more characteristics in this service. */
+                }},
+    },
     {
         /*** Service: Engine RPM */
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
@@ -129,9 +178,87 @@ static int tk_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
 
   uuid = ctxt->chr->uuid;
 
-  /* Determine which characteristic is being accessed by examining its
-   * 128-bit UUID.
+  /* Determine which characteristic is being accessed by examining its UUID.
    */
+
+  // ---------- Device information ----------
+  // Manufacturer name string
+  if (ble_uuid_cmp(uuid, &tk_id_device_info_mfr_name_string.u) == 0) {
+    assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
+
+    const char mfr[] = "OpenAgri";
+
+    rc = os_mbuf_append(ctxt->om, mfr, sizeof mfr);
+
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
+  // Model number string
+  if (ble_uuid_cmp(uuid, &tk_id_device_info_model_number_string.u) == 0) {
+    assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
+
+    const char name[] = CONFIG_TK_DEVICE_NAME;
+
+    rc = os_mbuf_append(ctxt->om, name, sizeof name);
+
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
+  // S/N string
+  if (ble_uuid_cmp(uuid, &tk_id_device_info_sn_string.u) == 0) {
+    assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
+
+    uint8_t mac[6];
+    char sn[13];
+    esp_read_mac(mac, ESP_MAC_BT);
+    sprintf(sn, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3],
+            mac[4], mac[5]);
+
+    rc = os_mbuf_append(ctxt->om, sn, sizeof sn);
+
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
+  // HW rev string
+  if (ble_uuid_cmp(uuid, &tk_id_device_info_hw_rev_string.u) == 0) {
+    assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
+
+    const char rev[] = "1.0";
+
+    rc = os_mbuf_append(ctxt->om, rev, sizeof(char) * strlen(rev));
+
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
+  // FW rev string
+  if (ble_uuid_cmp(uuid, &tk_id_device_info_fw_rev_string.u) == 0) {
+    assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
+
+    const esp_app_desc_t *desc = esp_ota_get_app_description();
+
+    char rev[36];
+    sprintf(rev, "IDF %s", desc->idf_ver);
+
+    rc = os_mbuf_append(ctxt->om, rev, sizeof(char) * strlen(rev));
+
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
+  // SW rev string
+  if (ble_uuid_cmp(uuid, &tk_id_device_info_sw_rev_string.u) == 0) {
+    assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
+
+    const esp_app_desc_t *desc = esp_ota_get_app_description();
+
+    char rev[32];
+    sprintf(rev, "%s", desc->version);
+
+    rc = os_mbuf_append(ctxt->om, rev, sizeof(char) * strlen(rev));
+
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
+  // ---------- Engine data ----------
 
   // Engine RPM
   if (ble_uuid_cmp(uuid, &tk_id_engine_rpm_ch_rpm.u) == 0) {
