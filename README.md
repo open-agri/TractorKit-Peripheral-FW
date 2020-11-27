@@ -48,7 +48,7 @@ The `GGHHJJJJKKKK` part is split in four sections.
 | `5AAA2412-111F-2400-0AA1-13005D240002` | Characteristic | Access point SSID                   | String         | read        |
 | `5AAA2412-111F-2400-0AA1-13005D240003` | Characteristic | Access point password               | String         | read        |
 | `5AAA2412-111F-2400-0AA1-13005D240004` | Characteristic | Update URL                          | String         | read        |
-| `5AAA2412-111F-2400-0AA1-13005D240004` | Characteristic | Update progress                     | Integer        | read notify |
+| `5AAA2412-111F-2400-0AA1-13005D240005` | Characteristic | Update progress                     | Integer        | read notify |
 | `5AAA2412-111F-2400-0AA1-13025D240000` | **Service**    | **Engine RPM service**              |                |             |
 | `5AAA2412-111F-2400-0AA1-13025D240001` | Characteristic | Engine RPM                          | Double         | read notify |
 | `5AAA2412-111F-2400-0AA1-13025D240002` | Characteristic | Engine RPM availability             | Boolean (byte) | read notify |
