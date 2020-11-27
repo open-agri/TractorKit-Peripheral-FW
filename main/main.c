@@ -14,12 +14,14 @@
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "nvs_flash.h"
 #include <stdio.h>
 
 #include "drivers/LED/led_onboard.h"
 #include "drivers/RPM/pulse.h"
 
 #include "model/datastore.h"
+#include "model/nvsettings.h"
 
 #include "BLE/ble.h"
 
@@ -35,6 +37,10 @@ void app_main(void) {
       "Peripheral boot. %s %s for ESP32 (compiled on %s %s) with ESP-IDF %s.",
       desc->project_name, desc->version, desc->date, desc->time, desc->idf_ver);
 
+  // Initialize settings
+  nv_init();
+  nv_load_peripheral_settings();
+
 #if CONFIG_TK_ONBOARD_LED_ENABLE
   led_onboard_init();
   led_onboard_set_curve(led_onboard_curve_breathe, 6000);
@@ -46,7 +52,8 @@ void app_main(void) {
 
 #if CONFIG_TK_ENGINE_RPM_ENABLE
   engine_rpm_pulse_init(&(global_datastore.engine_data.rpm),
-                        &(global_datastore.engine_data.rpm_available), 1.0);
+                        &(global_datastore.engine_data.rpm_available),
+                        global_datastore.settings.rpm_coeff);
 #endif
 
   while (1) {

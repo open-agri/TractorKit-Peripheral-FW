@@ -40,7 +40,7 @@
     "esp_nimble_hci.h": "c",
     "ble_gatt.h": "c"
   },
-  "idf.port": "/dev/ttyUSB0",
+  "idf.port": "/dev/ttyUSB1",
   "idf.baudRate": "921600",
   "idf.espIdfPath": "/home/riccardo/esp-idf",
   "idf.toolsPath": "/home/riccardo/.espressif"

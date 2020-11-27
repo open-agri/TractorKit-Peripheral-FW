@@ -21,6 +21,7 @@
 #include "esp_system.h"
 
 #include "model/datastore.h"
+#include "model/nvsettings.h"
 #include "tk_uuid.h"
 
 #define TAG "GATT"
@@ -267,6 +268,38 @@ static int tk_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
     rc = os_mbuf_append(ctxt->om, &(global_datastore.engine_data.rpm),
                         sizeof global_datastore.engine_data.rpm);
     return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
+  // Engine RPM availability
+  if (ble_uuid_cmp(uuid, &tk_id_engine_rpm_ch_rpm_avail.u) == 0) {
+    assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
+    rc = os_mbuf_append(ctxt->om, &(global_datastore.engine_data.rpm_available),
+                        sizeof global_datastore.engine_data.rpm_available);
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
+  // Engine RPM coefficient
+  if (ble_uuid_cmp(uuid, &tk_id_engine_rpm_ch_coeff.u) == 0) {
+    switch (ctxt->op) {
+    case BLE_GATT_ACCESS_OP_READ_CHR:
+      rc = os_mbuf_append(ctxt->om, &(global_datastore.settings.rpm_coeff),
+                          sizeof global_datastore.settings.rpm_coeff);
+      return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+
+    case BLE_GATT_ACCESS_OP_WRITE_CHR:;
+
+      double val;
+      rc = tk_gatt_write(ctxt->om, sizeof val, sizeof val, &val, NULL);
+      
+
+      nv_set_rpm_coefficient(val);
+
+      return rc;
+
+    default:
+      assert(0);
+      return BLE_ATT_ERR_UNLIKELY;
+    }
   }
 
   // if (ble_uuid_cmp(uuid, &gatt_svr_chr_sec_test_static_uuid.u) == 0) {
