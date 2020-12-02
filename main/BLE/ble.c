@@ -31,9 +31,8 @@ static uint8_t own_addr_type;
 void ble_store_config_init(void);
 static void ble_advertise(void);
 
-#define SERVICE_COUNT_128 2
-const ble_uuid128_t service_ids_128[SERVICE_COUNT_128] = {
-    tk_id_engine_rpm, tk_id_engine_temperature};
+#define SERVICE_COUNT_128 1
+const ble_uuid128_t service_ids_128[SERVICE_COUNT_128] = {tk_id_common_ota};
 
 #define SERVICE_COUNT_16 1
 const ble_uuid16_t service_ids_16[SERVICE_COUNT_16] = {tk_id_device_info};
@@ -169,40 +168,54 @@ static void ble_advertise(void) {
 
   memset(&fields, 0, sizeof fields);
 
-  // Initialize 128-bit UUIDs in loop
-  for (int i = 0; i < SERVICE_COUNT_128; i++) {
-    fields.num_uuids128 = 1;
-    fields.uuids128 = &(service_ids_128[i]);
-    fields.uuids128_is_complete = (i == SERVICE_COUNT_128 - 1);
+  // Initialize 128-bit UUIDs
+  fields.num_uuids128 = 1;
+  fields.uuids128 = service_ids_128;
+  fields.uuids128_is_complete = (SERVICE_COUNT_128 <= 1);
 
-    // Set additional fields
-    rc = ble_gap_adv_set_fields(&fields);
+  rc = ble_gap_adv_set_fields(&fields);
+  if (rc) {
+    ESP_LOGE(TAG,
+             "Error while setting first service 128-bit UUID in GAP fields "
+             "(error %d).",
+             rc);
+    return;
+  }
+
+  if (SERVICE_COUNT_128 > 1) {
+    struct ble_hs_adv_fields scan_response_fields;
+    memset(&scan_response_fields, 0, sizeof scan_response_fields);
+    scan_response_fields.uuids128 = &(service_ids_128[1]);
+    scan_response_fields.num_uuids128 = 1;
+    scan_response_fields.uuids128_is_complete = true;
+    rc = ble_gap_adv_rsp_set_fields(&scan_response_fields);
     if (rc) {
       ESP_LOGE(TAG,
-               "Error while setting service 128-bit UUID number %d in GAP fields "
-               "(error %d).",
-               i, rc);
+               "Error while setting additional service 128-bit UUID in GAP "
+               "response fields (error %d).",
+               rc);
       return;
     }
   }
 
-  memset(&fields, 0, sizeof fields);
+  if (SERVICE_COUNT_128 > 2) {
+    ESP_LOGW(
+        TAG,
+        "Advertising more than two 128-bit service UUIDs is not supported.");
+  }
 
-  // Initialize 16-bit UUIDs in loop
-  for (int i = 0; i < SERVICE_COUNT_16; i++) {
-    fields.num_uuids16 = 1;
-    fields.uuids16 = &(service_ids_16[i]);
-    fields.uuids16_is_complete = (i == SERVICE_COUNT_16 - 1);
+  // Initialize 16-bit UUID
+  fields.num_uuids16 = SERVICE_COUNT_16;
+  fields.uuids16 = service_ids_16;
+  fields.uuids16_is_complete = 1;
 
-    // Set additional fields
-    rc = ble_gap_adv_set_fields(&fields);
-    if (rc) {
-      ESP_LOGE(TAG,
-               "Error while setting service 16-bit UUID number %d in GAP fields "
-               "(error %d).",
-               i, rc);
-      return;
-    }
+  rc = ble_gap_adv_set_fields(&fields);
+  if (rc) {
+    ESP_LOGE(TAG,
+             "Error while setting first service 16-bit UUID in GAP fields "
+             "(error %d).",
+             rc);
+    return;
   }
 
   // Advertise
@@ -281,8 +294,10 @@ void tk_ble_init(void) {
   ble_hs_cfg.sm_bonding = true;
   ble_hs_cfg.sm_sc = 1;
   ble_hs_cfg.sm_mitm = 1;
-  ble_hs_cfg.sm_our_key_dist = 1;
-  ble_hs_cfg.sm_their_key_dist = 1;
+  ble_hs_cfg.sm_our_key_dist =
+      BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID;
+  ble_hs_cfg.sm_their_key_dist =
+      BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID;
 
   // GATT initialization (see up)
   if (tk_gatt_init()) {

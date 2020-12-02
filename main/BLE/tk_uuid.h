@@ -17,22 +17,59 @@
 static const ble_uuid16_t tk_id_device_info = BLE_UUID16_INIT(0x180A);
 
 // 2A29
-static const ble_uuid16_t tk_id_device_info_mfr_name_string = BLE_UUID16_INIT(0x2A29);
+static const ble_uuid16_t tk_id_device_info_mfr_name_string =
+    BLE_UUID16_INIT(0x2A29);
 
 // 2A24
-static const ble_uuid16_t tk_id_device_info_model_number_string = BLE_UUID16_INIT(0x2A24);
+static const ble_uuid16_t tk_id_device_info_model_number_string =
+    BLE_UUID16_INIT(0x2A24);
 
 // 2A25
 static const ble_uuid16_t tk_id_device_info_sn_string = BLE_UUID16_INIT(0x2A25);
 
 // 2A27
-static const ble_uuid16_t tk_id_device_info_hw_rev_string = BLE_UUID16_INIT(0x2A27);
+static const ble_uuid16_t tk_id_device_info_hw_rev_string =
+    BLE_UUID16_INIT(0x2A27);
 
 // 2A26
-static const ble_uuid16_t tk_id_device_info_fw_rev_string = BLE_UUID16_INIT(0x2A26);
+static const ble_uuid16_t tk_id_device_info_fw_rev_string =
+    BLE_UUID16_INIT(0x2A26);
 
 // 2A28
-static const ble_uuid16_t tk_id_device_info_sw_rev_string = BLE_UUID16_INIT(0x2A28);
+static const ble_uuid16_t tk_id_device_info_sw_rev_string =
+    BLE_UUID16_INIT(0x2A28);
+
+/* ----- OTA service ----- */
+
+// 5AAA2412-111F-2400-0AA1-13005D240000
+static const ble_uuid128_t tk_id_common_ota =
+    BLE_UUID128_INIT(0x00, 0x00, 0x24, 0x5d, 0x00, 0x13, 0xa1, 0x0a, 0x00, 0x24,
+                     0x1f, 0x11, 0x12, 0x24, 0xaa, 0x5a);
+
+// 5AAA2412-111F-2400-0AA1-13005D240001
+static const ble_uuid128_t tk_id_common_ota_ch_enable =
+    BLE_UUID128_INIT(0x01, 0x00, 0x24, 0x5d, 0x00, 0x13, 0xa1, 0x0a, 0x00, 0x24,
+                     0x1f, 0x11, 0x12, 0x24, 0xaa, 0x5a);
+
+// 5AAA2412-111F-2400-0AA1-13005D240002
+static const ble_uuid128_t tk_id_common_ota_ch_ssid =
+    BLE_UUID128_INIT(0x02, 0x00, 0x24, 0x5d, 0x00, 0x13, 0xa1, 0x0a, 0x00, 0x24,
+                     0x1f, 0x11, 0x12, 0x24, 0xaa, 0x5a);
+
+// 5AAA2412-111F-2400-0AA1-13005D240003
+static const ble_uuid128_t tk_id_common_ota_ch_password =
+    BLE_UUID128_INIT(0x03, 0x00, 0x24, 0x5d, 0x00, 0x13, 0xa1, 0x0a, 0x00, 0x24,
+                     0x1f, 0x11, 0x12, 0x24, 0xaa, 0x5a);
+
+// 5AAA2412-111F-2400-0AA1-13005D240004
+static const ble_uuid128_t tk_id_common_ota_ch_update_url =
+    BLE_UUID128_INIT(0x04, 0x00, 0x24, 0x5d, 0x00, 0x13, 0xa1, 0x0a, 0x00, 0x24,
+                     0x1f, 0x11, 0x12, 0x24, 0xaa, 0x5a);
+
+// 5AAA2412-111F-2400-0AA1-13005D240005
+static const ble_uuid128_t tk_id_common_ota_ch_progress =
+    BLE_UUID128_INIT(0x05, 0x00, 0x24, 0x5d, 0x00, 0x13, 0xa1, 0x0a, 0x00, 0x24,
+                     0x1f, 0x11, 0x12, 0x24, 0xaa, 0x5a);
 
 /* ----- Engine RPM service ----- */
 

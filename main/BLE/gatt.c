@@ -20,6 +20,8 @@
 #include "esp_ota_ops.h"
 #include "esp_system.h"
 
+#include "OTA/wifi.h"
+#include "OTA/server.h"
 #include "model/datastore.h"
 #include "model/nvsettings.h"
 #include "tk_uuid.h"
@@ -74,6 +76,47 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
                 },
                 {
                     0, /* No more characteristics in this service. */
+                },
+            },
+    },
+    {
+        /*** Service: OTA */
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = &tk_id_common_ota.u,
+        .characteristics =
+            (struct ble_gatt_chr_def[]){
+                {
+                    /*** Characteristic: Enable OTA access point */
+                    .uuid = &tk_id_common_ota_ch_enable.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+                },
+                {
+                    /*** Characteristic: OTA SSID */
+                    .uuid = &tk_id_common_ota_ch_ssid.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ,
+                },
+                {
+                    /*** Characteristic: OTA password */
+                    .uuid = &tk_id_common_ota_ch_password.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ,
+                },
+                {
+                    /*** Characteristic: Update URL */
+                    .uuid = &tk_id_common_ota_ch_update_url.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ,
+                },
+                {
+                    /*** Characteristic: Update progress */
+                    .uuid = &tk_id_common_ota_ch_progress.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+                },
+                {
+                    0, /* No more characteristics in this service. */
                 }},
     },
     {
@@ -86,24 +129,20 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
                     /*** Characteristic: Engine RPM */
                     .uuid = &tk_id_engine_rpm_ch_rpm.u,
                     .access_cb = tk_gatt_access,
-                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_ENC |
-                             BLE_GATT_CHR_F_NOTIFY,
+                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
                 },
                 {
                     /*** Characteristic: Engine RPM availability */
                     .uuid = &tk_id_engine_rpm_ch_rpm_avail.u,
                     .access_cb = tk_gatt_access,
-                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_ENC |
-                             BLE_GATT_CHR_F_NOTIFY,
+                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
 
                 },
                 {
                     /*** Characteristic: Engine RPM coefficient */
                     .uuid = &tk_id_engine_rpm_ch_coeff.u,
                     .access_cb = tk_gatt_access,
-                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_ENC |
-                             BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_ENC,
-
+                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
                 },
                 {
                     0, /* No more characteristics in this service. */
@@ -119,30 +158,26 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
                     /*** Characteristic: Engine temperature */
                     .uuid = &tk_id_engine_temperature_ch_engine.u,
                     .access_cb = tk_gatt_access,
-                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_ENC |
-                             BLE_GATT_CHR_F_NOTIFY,
+                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
                 },
                 {
                     /*** Characteristic: Engine temperature availability */
                     .uuid = &tk_id_engine_temperature_ch_engine_avail.u,
                     .access_cb = tk_gatt_access,
-                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_ENC |
-                             BLE_GATT_CHR_F_NOTIFY,
+                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
 
                 },
                 {
                     /*** Characteristic: Air temperature */
                     .uuid = &tk_id_engine_temperature_ch_air.u,
                     .access_cb = tk_gatt_access,
-                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_ENC |
-                             BLE_GATT_CHR_F_NOTIFY,
+                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
                 },
                 {
                     /*** Characteristic: Air temperature availability */
                     .uuid = &tk_id_engine_temperature_ch_air_avail.u,
                     .access_cb = tk_gatt_access,
-                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_ENC |
-                             BLE_GATT_CHR_F_NOTIFY,
+                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
 
                 },
                 {
@@ -259,6 +294,58 @@ static int tk_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
     return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
   }
 
+  // ---------- OTA ----------
+
+  // Enable OTA access point
+  if (ble_uuid_cmp(uuid, &tk_id_common_ota_ch_enable.u) == 0) {
+    switch (ctxt->op) {
+    case BLE_GATT_ACCESS_OP_READ_CHR:
+      rc = os_mbuf_append(ctxt->om, &(global_datastore.wifi_settings.ap_enable),
+                          sizeof global_datastore.wifi_settings.ap_enable);
+      return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+
+    case BLE_GATT_ACCESS_OP_WRITE_CHR:;
+
+      bool val;
+      rc = tk_gatt_write(ctxt->om, sizeof val, sizeof val, &val, NULL);
+
+      if (val != global_datastore.wifi_settings.ap_enable) {
+        if (val)
+          wifi_init_softap(&OTA_server);
+        else
+          wifi_stop_softap(NULL);
+      }
+
+      return rc;
+
+    default:
+      assert(0);
+      return BLE_ATT_ERR_UNLIKELY;
+    }
+  }
+
+  // OTA SSID
+  if (ble_uuid_cmp(uuid, &tk_id_common_ota_ch_ssid.u) == 0) {
+    assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
+
+    rc = os_mbuf_append(ctxt->om, global_datastore.wifi_settings.ssid,
+                        sizeof(char) *
+                            strlen(global_datastore.wifi_settings.ssid));
+
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
+  // OTA password
+  if (ble_uuid_cmp(uuid, &tk_id_common_ota_ch_password.u) == 0) {
+    assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
+
+    rc = os_mbuf_append(ctxt->om, global_datastore.wifi_settings.password,
+                        sizeof(char) *
+                            strlen(global_datastore.wifi_settings.password));
+
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
   // ---------- Engine data ----------
 
   // Engine RPM
@@ -290,7 +377,6 @@ static int tk_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
 
       double val;
       rc = tk_gatt_write(ctxt->om, sizeof val, sizeof val, &val, NULL);
-      
 
       nv_set_rpm_coefficient(val);
 
