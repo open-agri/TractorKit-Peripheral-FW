@@ -67,10 +67,11 @@ static int ble_gap_event_cb(struct ble_gap_event *event, void *arg) {
       assert(rc == 0);
     }
 
-    if (event->connect.status != 0) {
-      /* Connection failed; resume advertising. */
-      ble_advertise();
-    }
+    // if (event->connect.status != 0) {
+    /* Connection failed; resume advertising. */
+    // NO: Advertise even when already connected.
+    ble_advertise();
+    // }
     return 0;
 
   case BLE_GAP_EVENT_DISCONNECT:

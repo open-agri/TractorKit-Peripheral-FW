@@ -154,9 +154,9 @@ void engine_rpm_pulse_init(double *output, bool *output_available,
   ESP_ERROR_CHECK(esp_timer_create(&gatt_refresh_timer_args,
                                    &gatt_refresh_timer));
 
-  // Start timer (100ms)
+  // Start timer (30ms)
   ESP_ERROR_CHECK(
-      esp_timer_start_periodic(gatt_refresh_timer, 100 * 1000));
+      esp_timer_start_periodic(gatt_refresh_timer, 30 * 1000));
 
   // Prevent first reading error
   prev_micros = esp_timer_get_time();

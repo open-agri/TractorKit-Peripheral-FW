@@ -43,25 +43,31 @@ void nv_init() {
 void nv_load_peripheral_settings() {
   ESP_LOGI(TAG, "Loading all non-volatile peripheral settings.");
 
+#ifdef CONFIG_TK_ENGINE_RPM_ENABLE
   // Engine RPM coefficient
   global_datastore.settings.rpm_coeff = nv_get_rpm_coefficient();
+#endif
 }
 
 void nv_load_apply_peripheral_settings() {
   ESP_LOGI(TAG, "Loading and applying all non-volatile peripheral settings.");
   nv_load_peripheral_settings();
 
+#ifdef CONFIG_TK_ENGINE_RPM_ENABLE
   // Engine RPM coefficient
   engine_rpm_set_coeff(global_datastore.settings.rpm_coeff);
   ESP_LOGI(TAG, "Engine RPM coefficient applied to %.2f.",
            global_datastore.settings.rpm_coeff);
+#endif
 }
 
 // -------------------- SETTINGS --------------------
 
+#ifdef CONFIG_TK_ENGINE_RPM_ENABLE
 // Engine RPM coefficient
 void nv_set_rpm_coefficient(double coeff) {
-  ESP_LOGI(TAG, "Writing and applying engine RPM coefficient setting to %.2f.", coeff);
+  ESP_LOGI(TAG, "Writing and applying engine RPM coefficient setting to %.2f.",
+           coeff);
   global_datastore.settings.rpm_coeff = coeff;
 
   // Save
@@ -81,7 +87,9 @@ double nv_get_rpm_coefficient() {
              "RPM coefficient key not found. Returning default value of 1.");
   }
 
-  ESP_LOGI(TAG, "RPM coefficient read from NVS: %.2f.", (double)coeff_int/1000000);
+  ESP_LOGI(TAG, "RPM coefficient read from NVS: %.2f.",
+           (double)coeff_int / 1000000);
 
   return (double)coeff_int / 1000000;
 }
+#endif

@@ -1,7 +1,6 @@
 menu "TractorKit Peripheral"
-    choice TK_DEVICE_KIND
+    choice
         prompt "Device kind"
-        default TK_ENGINESENSE
         help
             The kind of peripheral. Set to custom for new designs.
 
@@ -14,10 +13,10 @@ menu "TractorKit Peripheral"
     endchoice
 
     config TK_DEVICE_NAME
-        string "Device name"
+        string "Device name" if TK_CUSTOM
         default "EngineSense" if TK_ENGINESENSE
         default "Navis" if TK_NAVIS
-        default "TractorKit Peripheral" if TK_CUSTOM
+        default "Custom peripheral"
         help
             Sets the base device name.
 
@@ -114,6 +113,7 @@ menu "TractorKit Peripheral"
     endmenu
 
     menu "Onboard LED"
+        visible if TK_CUSTOM
         config TK_ONBOARD_LED_ENABLE
             bool "Enable onboard LED"
             default y if TK_ENGINESENSE || TK_NAVIS
@@ -125,7 +125,8 @@ menu "TractorKit Peripheral"
             int "Onboard LED GPIO"
             range 0 39
             depends on TK_ONBOARD_LED_ENABLE
-            default 23 if TK_ENGINESENSE || TK_NAVIS
+            default 23 if TK_ENGINESENSE
+            default 25 if TK_NAVIS
             default 0
             help
                 Sets the onboard LED's GPIO number.

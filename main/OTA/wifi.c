@@ -70,7 +70,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
     ESP_LOGI(TAG, "SYSTEM_EVENT_STA_DISCONNECTED\r\n");
     esp_wifi_connect();
     xEventGroupClearBits(wifi_event_group, WIFI_STA_DISCONNECTED_BIT);
-    ESP_LOGI("WiFI", "retry to connect to the AP\r\n");
+    ESP_LOGI(TAG, "retry to connect to the AP\r\n");
     /* Stop the web server */
     if (*server) {
       stop_OTA_webserver(*server);
@@ -83,7 +83,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
     break; /**< the auth mode of AP connected by ESP32 station changed */
   case SYSTEM_EVENT_STA_GOT_IP: /**< ESP32 station got IP from connected AP */
     ESP_LOGI(TAG, "SYSTEM_EVENT_STA_GOT_IP\r\n");
-    ESP_LOGI("WiFI", "got ip:%s",
+    ESP_LOGI(TAG, "got ip:%s",
              ip4addr_ntoa(&event->event_info.got_ip.ip_info.ip));
     xEventGroupSetBits(wifi_event_group, WIFI_STA_CONNECTED_BIT);
     /* Start the web server */
@@ -117,7 +117,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
                                       */
     ESP_LOGI(TAG, "SYSTEM_EVENT_AP_STACONNECTED\r\n");
 
-    ESP_LOGI("WiFI-AP", "station:" MACSTR " join, AID=%d",
+    ESP_LOGI(TAG, "station:" MACSTR " join, AID=%d",
              MAC2STR(event->event_info.sta_connected.mac),
              event->event_info.sta_connected.aid);
     xEventGroupSetBits(wifi_event_group, AP_CLIENT_CONNECTED_BIT);
@@ -130,7 +130,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
   case SYSTEM_EVENT_AP_STADISCONNECTED: /**< a station disconnected from ESP32
                                            soft-AP */
     ESP_LOGI(TAG, "SYSTEM_EVENT_AP_STADISCONNECTED\r\n");
-    ESP_LOGI("WiFI-AP", "station:" MACSTR "leave, AID=%d",
+    ESP_LOGI(TAG, "station:" MACSTR "leave, AID=%d",
              MAC2STR(event->event_info.sta_disconnected.mac),
              event->event_info.sta_disconnected.aid);
     xEventGroupSetBits(wifi_event_group, AP_CLIENT_DISCONNECTED_BIT);

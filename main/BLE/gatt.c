@@ -20,8 +20,8 @@
 #include "esp_ota_ops.h"
 #include "esp_system.h"
 
-#include "OTA/wifi.h"
 #include "OTA/server.h"
+#include "OTA/wifi.h"
 #include "model/datastore.h"
 #include "model/nvsettings.h"
 #include "tk_uuid.h"
@@ -119,6 +119,7 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
                     0, /* No more characteristics in this service. */
                 }},
     },
+    #ifdef CONFIG_TK_ENGINE_RPM_ENABLE
     {
         /*** Service: Engine RPM */
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
@@ -148,6 +149,8 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
                     0, /* No more characteristics in this service. */
                 }},
     },
+    #endif
+    #ifdef CONFIG_TK_ENGINE_THERM_ENABLE
     {
         /*** Service: Engine temperature */
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
@@ -184,6 +187,7 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
                     0, /* No more characteristics in this service. */
                 }},
     },
+    #endif
     {
         0, /* No more services. */
     },
@@ -348,6 +352,7 @@ static int tk_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
 
   // ---------- Engine data ----------
 
+#ifdef CONFIG_TK_ENGINE_RPM_ENABLE
   // Engine RPM
   if (ble_uuid_cmp(uuid, &tk_id_engine_rpm_ch_rpm.u) == 0) {
     assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
@@ -387,6 +392,7 @@ static int tk_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
       return BLE_ATT_ERR_UNLIKELY;
     }
   }
+#endif
 
   // if (ble_uuid_cmp(uuid, &gatt_svr_chr_sec_test_static_uuid.u) == 0) {
   //   switch (ctxt->op) {
