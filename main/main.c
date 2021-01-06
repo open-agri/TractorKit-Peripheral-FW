@@ -19,6 +19,7 @@
 
 #include "drivers/LED/led_onboard.h"
 #include "drivers/RPM/pulse.h"
+#include "drivers/GPS/gps.h"
 
 #include "model/datastore.h"
 #include "model/nvsettings.h"
@@ -49,6 +50,10 @@ void app_main(void) {
 #endif
 
   tk_ble_init();
+
+#if CONFIG_TK_GPS_ENABLE
+  tk_gps_init();
+#endif
 
 #if CONFIG_TK_ENGINE_RPM_ENABLE
   engine_rpm_pulse_init(&(global_datastore.engine_data.rpm),

@@ -188,6 +188,8 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
                 }},
     },
     #endif
+    #ifdef CONFIG_TK_GPS_ENABLE
+    #endif
     {
         0, /* No more services. */
     },
