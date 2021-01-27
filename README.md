@@ -58,3 +58,7 @@ The `GGHHJJJJKKKK` part is split in four sections.
 | `5AAA2412-111F-2400-0AA1-13025D250002` | Characteristic | Intake air temperature              | Double         | read notify |
 | `5AAA2412-111F-2400-0AA1-13025D250003` | Characteristic | Engine temperature availability     | Boolean (byte) | read notify |
 | `5AAA2412-111F-2400-0AA1-13025D250004` | Characteristic | Intake air temperature availability | Boolean (byte) | read notify |
+| `5AAA2412-111F-2400-0AA1-13025D260000` | **Service**    | **Location service**                |                |             |
+| `5AAA2412-111F-2400-0AA1-13025D260001` | Characteristic | Current speed (km/h)                | Double         | read notify |
+| `5AAA2412-111F-2400-0AA1-13025D260002` | Characteristic | Current timestamp                   | Integer        | read        |
+| `5AAA2412-111F-2400-0AA1-13025D260003` | Characteristic | GPS signal availability             | Boolean (byte) | read notify |
