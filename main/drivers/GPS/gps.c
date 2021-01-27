@@ -13,13 +13,13 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "BLE/tk_uuid.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "host/ble_hs.h"
 #include "model/datastore.h"
 #include "nmea_parser.h"
-#include "BLE/tk_uuid.h"
 
 #define UART_NUM UART_NUM_1
 
@@ -34,8 +34,8 @@ void get_gps_gatt_chr_handles() {
   int rc;
 
   // Get speed handle
-  rc = ble_gatts_find_chr(&tk_id_location, &tk_id_location_ch_speed_kph, NULL,
-                          &spd_chr_val_handle);
+  rc = ble_gatts_find_chr(&tk_id_location, &tk_id_location_ch_speed_kph,
+                          NULL, &spd_chr_val_handle);
 
   if (rc) {
     ESP_LOGW(TAG,
@@ -64,6 +64,7 @@ void notify_gps_gatt_chrs() {
   }
 
   if (spd_chr_val_handle != 0 && gps_avail_chr_val_handle != 0) {
+    ESP_LOGI(TAG, "Indicating characteristic value change.");
     ble_gatts_chr_updated(spd_chr_val_handle);
     ble_gatts_chr_updated(gps_avail_chr_val_handle);
   }
@@ -92,8 +93,9 @@ static void gps_event_handler(void *event_handler_arg,
     char timestamp[60];
     sprintf(timestamp, "%d-%d-%d %d:%d:%d", gps->date.year, gps->date.month,
             gps->date.day, gps->tim.hour, gps->tim.minute, gps->tim.second);
-    if (strptime(timestamp, "%Y-%m-%d %H:%M:%S", &tm) != NULL) {
+    if (strptime(timestamp, "%y-%m-%d %H:%M:%S", &tm) != NULL) {
       global_datastore.location_data.epoch = mktime(&tm);
+      ESP_LOGI(TAG, "Epoch: %ld.", global_datastore.location_data.epoch);
     } else {
       ESP_LOGW(TAG, "Unable to parse time data.");
     }
