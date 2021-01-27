@@ -42,8 +42,9 @@
     "esp_http_server.h": "c",
     "http_parser.h": "c"
   },
-  "idf.port": "/dev/ttyUSB0",
+  "idf.port": "/dev/cu.usbserial-A1076LH4",
   "idf.baudRate": "921600",
-  "idf.espIdfPath": "/home/riccardo/esp-idf",
-  "idf.toolsPath": "/home/riccardo/.espressif"
+  "idf.espIdfPath": "/Users/riccardo/esp-idf",
+  "idf.toolsPath": "/home/riccardo/.espressif",
+  "idf.flashType": "UART"
 }

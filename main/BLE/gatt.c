@@ -119,7 +119,7 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
                     0, /* No more characteristics in this service. */
                 }},
     },
-    #ifdef CONFIG_TK_ENGINE_RPM_ENABLE
+#ifdef CONFIG_TK_ENGINE_RPM_ENABLE
     {
         /*** Service: Engine RPM */
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
@@ -149,8 +149,8 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
                     0, /* No more characteristics in this service. */
                 }},
     },
-    #endif
-    #ifdef CONFIG_TK_ENGINE_THERM_ENABLE
+#endif
+#ifdef CONFIG_TK_ENGINE_THERM_ENABLE
     {
         /*** Service: Engine temperature */
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
@@ -187,9 +187,38 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
                     0, /* No more characteristics in this service. */
                 }},
     },
-    #endif
-    #ifdef CONFIG_TK_GPS_ENABLE
-    #endif
+#endif
+#ifdef CONFIG_TK_GPS_ENABLE
+    {
+        /*** Service: Location */
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = &tk_id_location.u,
+        .characteristics =
+            (struct ble_gatt_chr_def[]){
+                {
+                    /*** Characteristic: Speed (km/h) */
+                    .uuid = &tk_id_location_ch_speed_kph.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+                },
+                {
+                    /*** Characteristic: Timestamp */
+                    .uuid = &tk_id_location_ch_timestamp.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ,
+
+                },
+                {
+                    /*** Characteristic: GPS availability */
+                    .uuid = &tk_id_location_ch_gps_avail.u,
+                    .access_cb = tk_gatt_access,
+                    .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+                },
+                {
+                    0, /* No more characteristics in this service. */
+                }},
+    },
+#endif
     {
         0, /* No more services. */
     },
@@ -393,6 +422,37 @@ static int tk_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
       assert(0);
       return BLE_ATT_ERR_UNLIKELY;
     }
+  }
+#endif
+
+  // ---------- Location data ----------
+
+#ifdef CONFIG_TK_GPS_ENABLE
+  // Speed
+  if (ble_uuid_cmp(uuid, &tk_id_location_ch_speed_kph.u) == 0) {
+    assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
+
+    rc = os_mbuf_append(ctxt->om, &(global_datastore.location_data.speed_kph),
+                        sizeof global_datastore.location_data.speed_kph);
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
+  // Epoch
+  if (ble_uuid_cmp(uuid, &tk_id_location_ch_timestamp.u) == 0) {
+    assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
+
+    rc = os_mbuf_append(ctxt->om, &(global_datastore.location_data.epoch),
+                        sizeof global_datastore.location_data.epoch);
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
+  // GPS availability
+  if (ble_uuid_cmp(uuid, &tk_id_location_ch_gps_avail.u) == 0) {
+    assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
+
+    rc = os_mbuf_append(ctxt->om, &(global_datastore.location_data.gps_available),
+                        sizeof global_datastore.location_data.gps_available);
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
   }
 #endif
 
