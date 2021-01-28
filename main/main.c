@@ -20,11 +20,13 @@
 #include "drivers/LED/led_onboard.h"
 #include "drivers/RPM/pulse.h"
 #include "drivers/GPS/gps.h"
+#include "drivers/thermo/thermo.h"
 
 #include "model/datastore.h"
 #include "model/nvsettings.h"
 
 #include "BLE/ble.h"
+#include "BLE/tk_uuid.h"
 
 #define TAG "Main"
 
@@ -53,6 +55,10 @@ void app_main(void) {
 
 #if CONFIG_TK_GPS_ENABLE
   tk_gps_init();
+#endif
+
+#if CONFIG_TK_ENGINE_THERM_ENABLE
+  tk_thermo_init(&(global_datastore.engine_data.temp_c), &(tk_id_engine_temperature.u), &(tk_id_engine_temperature_ch_engine.u));
 #endif
 
 #if CONFIG_TK_ENGINE_RPM_ENABLE

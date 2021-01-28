@@ -8,6 +8,10 @@ if(CONFIG_TK_ENGINE_RPM_ENABLE)
     file(GLOB_RECURSE SOURCES ${SOURCES} drivers/RPM/pulse.c)
 endif()
 
+if(CONFIG_TK_ENGINE_THERM_ENABLE)
+    file(GLOB_RECURSE SOURCES ${SOURCES} drivers/thermo/*.c)
+endif()
+
 if(CONFIG_TK_GPS_ENABLE)
     file(GLOB_RECURSE SOURCES ${SOURCES} drivers/GPS/*.c)
 endif()

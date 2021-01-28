@@ -95,8 +95,6 @@ void engine_rpm_pulse_after_deb(void *arg) {
 void engine_rpm_max_period_reached(void *arg) {
   *(double *)(arg) = 0;
   *data_available = false;
-
-  // TODO: Update availability chr on GATT
 }
 
 void gatt_refresh_timer_cb(void *arg) {
@@ -107,8 +105,6 @@ void gatt_refresh_timer_cb(void *arg) {
   if (rpm_chr_val_handle) {
     ble_gatts_chr_updated(rpm_chr_val_handle);
   }
-
-  // TODO!
 }
 
 /**

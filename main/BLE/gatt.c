@@ -383,6 +383,17 @@ static int tk_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
 
   // ---------- Engine data ----------
 
+#ifdef CONFIG_TK_ENGINE_THERM_ENABLE
+  // Engine temperature
+  if (ble_uuid_cmp(uuid, &tk_id_engine_temperature_ch_engine.u) == 0) {
+    assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
+
+    rc = os_mbuf_append(ctxt->om, &(global_datastore.engine_data.temp_c),
+                        sizeof global_datastore.engine_data.temp_c);
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+#endif
+
 #ifdef CONFIG_TK_ENGINE_RPM_ENABLE
   // Engine RPM
   if (ble_uuid_cmp(uuid, &tk_id_engine_rpm_ch_rpm.u) == 0) {

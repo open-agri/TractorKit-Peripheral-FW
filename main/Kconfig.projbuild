@@ -229,6 +229,21 @@ menu "TractorKit Peripheral"
             config TK_ENGINE_THERM_MELEXIS_MLX90614
                 bool "Melexis MLX90614"
         endchoice
+
+        config TK_ENGINE_THERM_SDA_PIN
+            int "Thermometer SDA pin"
+            depends on TK_ENGINE_THERM_MELEXIS_MLX90614
+            default 21
+            help
+                The I2C SDA pin number.
+
+        config TK_ENGINE_THERM_SCL_PIN
+            int "Thermometer SCL pin"
+            depends on TK_ENGINE_THERM_MELEXIS_MLX90614
+            default 22
+            help
+                The I2C SCL pin number.
+
     endmenu
 
     menu "Onboard LED"
